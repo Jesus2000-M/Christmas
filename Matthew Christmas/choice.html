@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:radial-gradient(circle at top, #0b3c2d, #000);
+    color:#fff;
+    text-align:center;
+}
+h1{
+    font-size:36px;
+    color:#00ff66;
+    text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
+    margin-top:30px;
+}
+p{
+    color:#ff4444;
+    text-shadow:0 0 10px #ff4444;
+    margin-bottom:40px;
+}
+.boxes{
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    flex-wrap:wrap;
+}
+.box{
+    width:260px;
+    height:200px;
+    background:rgba(255,255,255,0.1);
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:0.3s;
+    box-shadow:0 0 15px #00ff66,0 0 25px #ff0000;
+}
+.box:hover{
+    transform:scale(1.06);
+    box-shadow:0 0 25px #00ff66,0 0 40px #ff0000;
+}
+.box span{ font-size:64px; }
+.box h3{
+    margin-top:10px;
+    color:#00ff66;
+    text-shadow:0 0 10px #00ff66,0 0 25px #ff0000;
+}
+</style>
+</head>
+<body>
+<h1>Welcome <span id="name"></span></h1>
+<p>Click to enjoy!</p>
+<div class="boxes">
+    <div class="box" onclick="location.href='wish.html'">
+        <span>🎁</span>
+        <h3>Christmas Wish</h3>
+    </div>
+    <div class="box" onclick="location.href='game.html'">
+        <span>🎮</span>
+        <h3>Christmas Game</h3>
+    </div>
+</div>
+<script>
+document.getElementById("name").textContent = localStorage.getItem("playerName") || "Friend";
+</script>
+</body>
+</html>
+

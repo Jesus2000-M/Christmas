@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Manage Scoreboard</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:radial-gradient(circle at top,#0b3c2d,#000);
+    color:#fff;
+    text-align:center;
+}
+h1{
+    font-size:36px;
+    color:#00ff66;
+    text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
+    margin-top:20px;
+}
+table{
+    margin:auto;
+    margin-top:20px;
+    border-collapse:collapse;
+    width:90%;
+}
+th,td{
+    padding:10px;
+    border:1px solid #00ff66;
+    text-align:center;
+}
+button{
+    padding:8px 16px;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(45deg,#ff0000,#00ff66);
+    font-weight:bold;
+    color:#000;
+    cursor:pointer;
+    margin:2px;
+}
+input{
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #00ff66;
+    background:#000;
+    color:#fff;
+    width:100px;
+    text-align:center;
+}
+.logout{
+    margin:15px;
+    padding:10px 20px;
+    font-size:16px;
+}
+</style>
+</head>
+<body>
+
+<!-- PROTECT PAGE -->
+<script>
+if(sessionStorage.getItem("admin") !== "true"){
+    location.href="index.html";
+}
+</script>
+
+<h1>🏆 Admin Scoreboard Manager</h1>
+<button class="logout" onclick="logout()">Logout</button>
+<br>
+<button onclick="addScore()">➕ Add New Score</button>
+
+<table>
+<thead>
+<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Score</th>
+    <th>Actions</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<script>
+// Load scores from localStorage
+let scores = JSON.parse(localStorage.getItem("snowTop10")) || [];
+
+// Render table
+function render(){
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    scores.forEach((s,i)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i+1}</td>
+            <td contenteditable="true" onblur="editName(${i},this.innerText)">${s.name}</td>
+            <td contenteditable="true" onblur="editScore(${i},this.innerText)">${s.score}</td>
+            <td>
+                <button onclick="deleteScore(${i})">🗑️ Delete</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// Edit name
+function editName(i,val){
+    scores[i].name = val;
+    save();
+}
+
+// Edit score
+function editScore(i,val){
+    const num = parseInt(val);
+    if(!isNaN(num)) scores[i].score = num;
+    save();
+}
+
+// Delete score
+function deleteScore(i){
+    if(confirm("Delete this score?")){
+        scores.splice(i,1);
+        save();
+        render();
+    }
+}
+
+// Add new score
+function addScore(){
+    const name = prompt("Enter name:");
+    const score = parseInt(prompt("Enter score:"));
+    if(name && !isNaN(score)){
+        scores.push({name,score});
+        scores.sort((a,b)=>b.score - a.score);
+        scores = scores.slice(0,10); // top 10
+        save();
+        render();
+    }
+}
+
+// Save to localStorage
+function save(){
+    localStorage.setItem("snowTop10",JSON.stringify(scores));
+    // trigger storage event to update scoreboard.html if open
+    window.dispatchEvent(new Event('storage'));
+}
+
+// Logout
+function logout(){
+    sessionStorage.removeItem("admin");
+    location.href="index.html";
+}
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>

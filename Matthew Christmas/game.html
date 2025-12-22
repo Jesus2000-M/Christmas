@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Christmas Game</title>
+<style>
+html, body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family:Arial, sans-serif;
+    background:radial-gradient(circle at top,#0b3c2d,#000);
+    color:#fff;
+    overflow:hidden; /* hide scrollbars */
+}
+body{
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:center;
+}
+
+/* HEADER */
+h2{
+    margin:15px 0;
+    font-size:32px;
+    color:#00ff66;
+    text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
+}
+p{
+    color:#ff4444;
+    text-shadow:0 0 10px #ff4444;
+}
+
+/* GAME AREA FULLSCREEN */
+#game{
+    position:relative;
+    width:100vw;
+    height:calc(100vh - 120px); /* leave space for header/score */
+    background:rgba(255,255,255,0.02);
+    box-shadow:0 0 15px #00ff66 inset,0 0 25px #ff0000 inset;
+    overflow:hidden;
+}
+
+/* SNOWMAN IMAGE */
+.snowman{
+    position:absolute;
+    width:60px;
+    height:60px;
+    cursor:pointer;
+}
+
+/* GAME OVER */
+#over{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+}
+
+button{
+    padding:12px 26px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#ff0000,#00ff66);
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+    color:#000;
+    box-shadow:0 0 10px #ff0000,0 0 20px #00ff66;
+    transition:0.3s;
+    margin:6px;
+}
+button:hover{ transform:scale(1.05); }
+</style>
+</head>
+<body>
+
+<h2>🎄 Snowball Shooter</h2>
+<p>Player: <b><span id="player"></span></b> | Score: <span id="score">0</span></p>
+
+<div id="game"></div>
+
+<div id="over">
+    <h2>Game Over 🎮</h2>
+    <p id="finalScore"></p>
+    <button onclick="openScoreboard()">🏆 View Scoreboard</button>
+    <button onclick="startGame()">🔄 Play Again</button>
+    <button onclick="location.href='choice.html'">⬅ Back</button>
+</div>
+
+<script>
+const game=document.getElementById("game");
+const scoreText=document.getElementById("score");
+const finalScore=document.getElementById("finalScore");
+document.getElementById("player").textContent = localStorage.getItem("playerName")||"Player";
+
+let score=0,speed=2000,ended=false,loop;
+
+function spawn(){
+    const img=document.createElement("img");
+    img.src="snowman.png";
+    img.className="snowman";
+    const maxX = game.clientWidth - 60;
+    const maxY = game.clientHeight - 60;
+    img.style.left=Math.random()*maxX+"px";
+    img.style.top=Math.random()*maxY+"px";
+
+    img.onclick=()=>{
+        if(ended) return;
+        score+=10;
+        scoreText.textContent=score;
+        img.remove();
+    };
+
+    game.appendChild(img);
+
+    setTimeout(()=>{
+        if(game.contains(img) && !ended) endGame();
+    },speed);
+}
+
+function startGame(){
+    game.innerHTML="";
+    score=0; speed=2000; ended=false;
+    scoreText.textContent=0;
+    document.getElementById("over").style.display="none";
+
+    loop=setInterval(()=>{
+        spawn();
+        if(speed>800) speed-=50;
+    },900);
+}
+
+function endGame(){
+    if(ended) return;
+    ended=true;
+    clearInterval(loop);
+    finalScore.textContent="Your Score: "+score;
+    document.getElementById("over").style.display="flex";
+    saveScore();
+}
+
+function saveScore(){
+    let board=JSON.parse(localStorage.getItem("snowTop10"))||[];
+    board.push({name:localStorage.getItem("playerName")||"Player",score});
+    board.sort((a,b)=>b.score-a.score);
+    board=board.slice(0,10);
+    localStorage.setItem("snowTop10",JSON.stringify(board));
+}
+
+function openScoreboard(){ window.location.href="scoreboard.html"; }
+
+/* AUTO START */
+startGame();
+
+/* ADJUST GAME SIZE ON WINDOW RESIZE */
+window.addEventListener('resize',()=>{});
+</script>
+
+</body>
+</html>

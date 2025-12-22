@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Christmas Wish</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:radial-gradient(circle at top,#0b3c2d,#000);
+    color:#fff;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+h1{
+    font-size:36px;
+    color:#00ff66;
+    text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
+}
+#wishBox{
+    background:rgba(255,255,255,0.1);
+    border-radius:20px;
+    padding:25px;
+    max-width:600px;
+    box-shadow:0 0 20px #00ff66,0 0 25px #ff0000;
+    margin:20px 0;
+    font-size:18px;
+    line-height:1.6;
+}
+button{
+    padding:12px 26px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#ff0000,#00ff66);
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+    color:#000;
+    box-shadow:0 0 10px #ff0000,0 0 20px #00ff66;
+    transition:0.3s;
+}
+button:hover{ transform:scale(1.05); }
+</style>
+</head>
+<body>
+<h1>Merry Christmas <span id="name"></span></h1>
+<div id="wishBox"><p id="wishText"></p></div>
+<button onclick="location.href='choice.html'">⬅ Back</button>
+<script>
+document.getElementById("name").textContent = localStorage.getItem("playerName") || "Friend";
+const wishes = [
+    "May you be blessed with gifts of hope, love and peace.",
+    "May your world be filled with warmth and good cheer this holy season, we wish you a joy filled christmas.",
+    "Let god's love engulf you this christmas and grant you ultimate peace.",
+    "Count your blessings this Christmas Eve and thank the Lord for how far you have come.",
+    "May the miracle of Christ’s birth bring you everlasting joy and blessings."
+];
+document.getElementById("wishText").textContent = wishes[Math.floor(Math.random()*wishes.length)];
+</script>
+</body>
+</html>
+

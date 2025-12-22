@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:radial-gradient(circle at top,#0b3c2d,#000);
+    color:#fff;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.container{
+    background:rgba(255,255,255,0.05);
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 20px #00ff66,0 0 25px #ff0000;
+}
+input{
+    padding:12px;
+    border-radius:10px;
+    border:2px solid #00ff66;
+    background:#000;
+    color:#fff;
+    font-size:16px;
+    margin:10px 0;
+}
+button{
+    padding:12px 26px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#ff0000,#00ff66);
+    font-weight:bold;
+    color:#000;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Admin Login</h2>
+<input type="password" id="password" placeholder="Enter Password">
+<br>
+<button onclick="login()">Login</button>
+<p id="msg" style="color:red;"></p>
+</div>
+
+<script>
+function login(){
+    const pass=document.getElementById("password").value;
+    const msg=document.getElementById("msg");
+    if(pass==="810047d666c70f41f86c9d8101c2fb4f57f46a21201c910da034630c548566fe"){  // <--- admin password
+        window.location.href="manage.html";
+    }else{
+        msg.textContent="Wrong password!";
+    }
+}
+</script>
+</body>
+</html>
