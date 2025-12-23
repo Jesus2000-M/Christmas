@@ -71,7 +71,6 @@ button{
 <br><br>
 <button class="logout" onclick="logout()">🚪 Logout</button>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -79,15 +78,16 @@ import {
   collection,
   getDocs,
   deleteDoc,
-  doc
+  doc,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔐 CHECK ADMIN SESSION */
+// Check admin session
 if(sessionStorage.getItem("admin") !== "yes"){
   location.href = "admin-login.html";
 }
 
-/* 🔥 FIREBASE CONFIG */
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDiwnacK-zGX0htpVQpnbGfJuIu07qfkx4",
   authDomain: "christmas-scoreboard.firebaseapp.com",
@@ -102,49 +102,58 @@ const db = getFirestore(app);
 
 const rows = document.getElementById("rows");
 
-/* LOAD SCORES */
-async function load(){
-  rows.innerHTML = "";
-  const snap = await getDocs(collection(db,"scores"));
-
-  snap.forEach(d=>{
-    const data = d.data();
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${data.name}</td>
-      <td>${data.score}</td>
-      <td><button class="del">Delete</button></td>
-    `;
-
-    tr.querySelector(".del").onclick = async ()=>{
-      if(confirm("Delete this score?")){
-        await deleteDoc(doc(db,"scores",d.id));
-        load();
-      }
-    };
-
-    rows.appendChild(tr);
+// Load scores (real-time)
+function loadScores(){
+  // Listen for changes
+  const colRef = collection(db,"scores");
+  onSnapshot(colRef, (snap)=>{
+    rows.innerHTML = ""; // clear table
+    snap.forEach(docSnap=>{
+      const data = docSnap.data();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${data.name}</td>
+        <td>${data.score}</td>
+        <td><button class="del">Delete</button></td>
+      `;
+      tr.querySelector(".del").onclick = async ()=>{
+        if(confirm("Delete this score?")){
+          try{
+            await deleteDoc(doc(db,"scores",docSnap.id));
+          }catch(e){
+            console.error("Delete failed:", e);
+            alert("Cannot delete. Check Firestore rules.");
+          }
+        }
+      };
+      rows.appendChild(tr);
+    });
+  }, err=>{
+    console.error("Error loading scores:", err);
+    alert("Error loading scores. Check console.");
   });
 }
 
-/* RESET ALL */
+// Reset all
 window.resetAll = async ()=>{
   if(!confirm("Delete ALL scores?")) return;
   const snap = await getDocs(collection(db,"scores"));
-  snap.forEach(async d=>{
-    await deleteDoc(doc(db,"scores",d.id));
+  snap.forEach(async docSnap=>{
+    try{
+      await deleteDoc(doc(db,"scores",docSnap.id));
+    }catch(e){
+      console.error("Reset failed:", e);
+    }
   });
-  load();
 };
 
-/* LOGOUT */
+// Logout
 window.logout = ()=>{
   sessionStorage.removeItem("admin");
   location.href = "admin-login.html";
 };
 
-load();
+loadScores();
 </script>
 
 </body>
