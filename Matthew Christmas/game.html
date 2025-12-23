@@ -13,7 +13,7 @@ html, body{
 body{ display:flex; flex-direction:column; align-items:center; }
 
 /* HEADER */
-h2{ margin:15px 0 5px; font-size:32px; color:#00ff66; text-shadow:0 0 10px #00ff66,0 0 25px #00ff66; }
+h2{ margin:15px 0 5px; font-size:32px; color:#00ff66; text-shadow:0 0 10px #00ff66,0 0 25px #00ff66;}
 p{ color:#ff4444; text-shadow:0 0 10px #ff4444; }
 
 /* GAME AREA */
@@ -58,11 +58,10 @@ button:hover{ transform:scale(1.05); }
 </div>
 
 <script type="module">
-// 🔥 FIREBASE IMPORT
+// FIREBASE (if you want score saving)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔥 FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyDiwnacK-zGX0htpVQpnbGfJuIu07qfkx4",
   authDomain: "christmas-scoreboard.firebaseapp.com",
@@ -74,10 +73,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-/* SOUND EFFECTS */
-const hitSound = new Audio("hit.mp3");
-const overSound = new Audio("gameover.mp3");
 
 /* GAME VARIABLES */
 const game = document.getElementById("game");
@@ -91,24 +86,10 @@ let score = 0;
 let ended = false;
 let spawnDelay = 900;
 let lifeTime = 2000;
-let loopTimeout;
-
-/* START GAME */
-function startGame(){
-    clearTimeout(loopTimeout);
-    game.innerHTML = '';
-    score = 0;
-    ended = false;
-    spawnDelay = 900;
-    lifeTime = 2000;
-    scoreText.textContent = "0";
-    document.getElementById("over").style.display = "none";
-
-    spawnNext();
-}
+let spawnTimeout;
 
 /* SPAWN SNOWMAN SEQUENTIALLY */
-function spawnNext(){
+function spawn(){
     if(ended) return;
 
     const img = new Image();
@@ -118,13 +99,11 @@ function spawnNext(){
     img.onload = () => {
         if(ended) return;
 
-        img.style.left = Math.random()*(game.clientWidth-60)+'px';
-        img.style.top = Math.random()*(game.clientHeight-60)+'px';
+        img.style.left = Math.random() * (game.clientWidth - 60) + "px";
+        img.style.top = Math.random() * (game.clientHeight - 60) + "px";
 
         img.onclick = () => {
             if(ended) return;
-            hitSound.currentTime = 0;
-            hitSound.play().catch(()=>{});
             score += 10;
             scoreText.textContent = score;
             img.remove();
@@ -132,51 +111,64 @@ function spawnNext(){
 
         game.appendChild(img);
 
-        setTimeout(() => {
+        // remove or end game after lifeTime
+        setTimeout(()=>{
             if(game.contains(img) && !ended){
                 endGame();
             }
         }, lifeTime);
 
-        // Schedule next spawn after spawnDelay
-        loopTimeout = setTimeout(spawnNext, spawnDelay);
-
-        // Increase difficulty gradually
-        if(spawnDelay > 400) spawnDelay -= 20;
-        if(lifeTime > 600) lifeTime -= 80;
+        // spawn next snowman only after delay
+        if(!ended){
+            spawnTimeout = setTimeout(spawn, spawnDelay);
+        }
     };
+}
+
+/* START GAME */
+function startGame(){
+    clearTimeout(spawnTimeout);
+    game.innerHTML = "";
+    score = 0;
+    ended = false;
+    spawnDelay = 900;
+    lifeTime = 2000;
+    scoreText.textContent = "0";
+    document.getElementById("over").style.display = "none";
+
+    spawn(); // start first snowman
 }
 
 /* END GAME */
 async function endGame(){
     if(ended) return;
     ended = true;
-    clearTimeout(loopTimeout);
+    clearTimeout(spawnTimeout);
     finalScore.textContent = "Your Score: " + score;
     document.getElementById("over").style.display = "flex";
 
-    try {
+    // Save globally to Firebase
+    try{
         await addDoc(collection(db,"scores"),{
             name: playerName,
             score: score,
             time: serverTimestamp()
         });
-    } catch(e){
+    }catch(e){
         console.error("Error saving score:", e);
     }
-
 }
 
 /* VIEW SCOREBOARD */
-function openScoreboard(){
+window.openScoreboard = function(){
     location.href = "scoreboard.html";
-}
+};
 
 window.startGame = startGame;
 
+// AUTO START
 startGame();
 </script>
-
 </body>
 </html>
 
