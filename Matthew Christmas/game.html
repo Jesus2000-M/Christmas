@@ -88,6 +88,15 @@ let spawnDelay = 900;
 let lifeTime = 2000;
 let spawnTimeout;
 
+/* SOUND EFFECTS */
+const hitSound = new Audio("hit1.mp3");
+const gameOverSound = new Audio("gameover.mp3");
+
+function playSound(sound){
+    sound.currentTime = 0;
+    sound.play().catch(()=>{}); // prevent errors on autoplay restrictions
+}
+
 /* SPAWN SNOWMAN SEQUENTIALLY */
 function spawn(){
     if(ended) return;
@@ -106,6 +115,7 @@ function spawn(){
             if(ended) return;
             score += 10;
             scoreText.textContent = score;
+            playSound(hitSound);
             img.remove();
         };
 
@@ -146,6 +156,7 @@ async function endGame(){
     clearTimeout(spawnTimeout);
     finalScore.textContent = "Your Score: " + score;
     document.getElementById("over").style.display = "flex";
+    playSound(gameOverSound);
 
     // Save globally to Firebase
     try{
@@ -171,4 +182,5 @@ startGame();
 </script>
 </body>
 </html>
+
 
