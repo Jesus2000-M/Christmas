@@ -12,16 +12,22 @@ html, body{
 }
 body{ display:flex; flex-direction:column; align-items:center; }
 
+/* HEADER */
 h2{ margin:15px 0 5px; font-size:32px; color:#00ff66; text-shadow:0 0 10px #00ff66,0 0 25px #00ff66; }
 p{ color:#ff4444; text-shadow:0 0 10px #ff4444; }
 
-#game{ position:relative; width:100vw; height:calc(100vh - 110px);
-       background:rgba(255,255,255,0.02);
-       box-shadow:0 0 20px #00ff66 inset,0 0 30px #ff0000 inset;
-       overflow:hidden; }
+/* GAME AREA */
+#game{
+    position:relative; width:100vw; height:calc(100vh - 110px);
+    background:rgba(255,255,255,0.02);
+    box-shadow:0 0 20px #00ff66 inset,0 0 30px #ff0000 inset;
+    overflow:hidden;
+}
 
+/* SNOWMAN */
 .snowman{ position:absolute; width:60px; height:60px; cursor:pointer; user-select:none; }
 
+/* GAME OVER SCREEN */
 #over{
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9);
     z-index:10; flex-direction:column; justify-content:center; align-items:center;
@@ -69,6 +75,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* SOUND EFFECTS */
+const hitSound = new Audio("hit.mp3");
+const overSound = new Audio("gameover.mp3");
+
 /* GAME VARIABLES */
 const game = document.getElementById("game");
 const scoreText = document.getElementById("score");
@@ -81,20 +91,24 @@ let score = 0;
 let ended = false;
 let spawnDelay = 900;
 let lifeTime = 2000;
-let loop;
+let loopTimeout;
 
-/* 🔊 SOUND EFFECTS */
-const hitSound = new Audio("hit.mp3");
-const overSound = new Audio("gameover.mp3");
-let mute = false; // optional if you want a mute toggle
-function play(sound){
-    if(mute) return;
-    sound.currentTime = 0;
-    sound.play().catch(()=>{});
+/* START GAME */
+function startGame(){
+    clearTimeout(loopTimeout);
+    game.innerHTML = '';
+    score = 0;
+    ended = false;
+    spawnDelay = 900;
+    lifeTime = 2000;
+    scoreText.textContent = "0";
+    document.getElementById("over").style.display = "none";
+
+    spawnNext();
 }
 
-/* SPAWN SNOWMAN */
-function spawn(){
+/* SPAWN SNOWMAN SEQUENTIALLY */
+function spawnNext(){
     if(ended) return;
 
     const img = new Image();
@@ -104,14 +118,15 @@ function spawn(){
     img.onload = () => {
         if(ended) return;
 
-        img.style.left = Math.random() * (game.clientWidth - 60) + "px";
-        img.style.top = Math.random() * (game.clientHeight - 60) + "px";
+        img.style.left = Math.random()*(game.clientWidth-60)+'px';
+        img.style.top = Math.random()*(game.clientHeight-60)+'px';
 
         img.onclick = () => {
             if(ended) return;
+            hitSound.currentTime = 0;
+            hitSound.play().catch(()=>{});
             score += 10;
             scoreText.textContent = score;
-            play(hitSound);
             img.remove();
         };
 
@@ -122,39 +137,24 @@ function spawn(){
                 endGame();
             }
         }, lifeTime);
-    };
-}
 
-/* START GAME */
-function startGame(){
-    clearTimeout(loop);
-    game.innerHTML = "";
-    score = 0;
-    ended = false;
-    spawnDelay = 900;
-    lifeTime = 2000;
-    scoreText.textContent = "0";
-    document.getElementById("over").style.display = "none";
+        // Schedule next spawn after spawnDelay
+        loopTimeout = setTimeout(spawnNext, spawnDelay);
 
-    function gameLoop(){
-        spawn();
+        // Increase difficulty gradually
         if(spawnDelay > 400) spawnDelay -= 20;
         if(lifeTime > 600) lifeTime -= 80;
-        loop = setTimeout(gameLoop, spawnDelay);
-    }
-    gameLoop();
+    };
 }
 
 /* END GAME */
 async function endGame(){
     if(ended) return;
     ended = true;
-    clearTimeout(loop);
+    clearTimeout(loopTimeout);
     finalScore.textContent = "Your Score: " + score;
     document.getElementById("over").style.display = "flex";
-    play(overSound);
 
-    // Save globally in Firebase
     try {
         await addDoc(collection(db,"scores"),{
             name: playerName,
@@ -164,14 +164,19 @@ async function endGame(){
     } catch(e){
         console.error("Error saving score:", e);
     }
+
 }
 
 /* VIEW SCOREBOARD */
-function openScoreboard(){ location.href="scoreboard.html"; }
+function openScoreboard(){
+    location.href = "scoreboard.html";
+}
 
 window.startGame = startGame;
+
 startGame();
 </script>
 
 </body>
 </html>
+
