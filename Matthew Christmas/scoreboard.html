@@ -3,81 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreboard</title>
+<title>Top Scores</title>
 <style>
-body{
-    margin:0;
-    font-family:Arial;
-    background:radial-gradient(circle at top,#0b3c2d,#000);
-    color:#fff;
-    text-align:center;
-}
-h1{
-    font-size:36px;
-    color:#00ff66;
-    text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
-    margin-top:30px;
-}
-ol{
-    max-width:300px;
-    margin:auto;
-    padding:0;
-    list-style:none;
-}
-ol li{
-    background:rgba(255,255,255,0.1);
-    margin:8px 0;
-    padding:12px;
-    border-radius:15px;
-    box-shadow:0 0 15px #00ff66,0 0 25px #ff0000;
-}
-button{
-    padding:12px 26px;
-    border:none;
-    border-radius:10px;
-    background:linear-gradient(45deg,#ff0000,#00ff66);
-    cursor:pointer;
-    font-size:16px;
-    font-weight:bold;
-    color:#000;
-    box-shadow:0 0 10px #ff0000,0 0 20px #00ff66;
-    margin-top:20px;
-}
-button:hover{ transform:scale(1.05); }
+body{margin:0;font-family:Arial;background:radial-gradient(circle at top,#0b3c2d,#000);color:#fff;text-align:center;min-height:100vh;}
+h1{font-size:36px;color:#00ff66;text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;margin-top:30px;}
+ol{max-width:320px;margin:30px auto;padding:0;list-style:none;}
+ol li{background:rgba(255,255,255,0.1);margin:10px 0;padding:14px;border-radius:15px;box-shadow:0 0 15px #00ff66,0 0 25px #ff0000;font-size:16px;}
+button{padding:12px 26px;border:none;border-radius:10px;background:linear-gradient(45deg,#ff0000,#00ff66);cursor:pointer;font-size:16px;font-weight:bold;color:#000;box-shadow:0 0 10px #ff0000,0 0 20px #00ff66;margin-bottom:30px;}
+button:hover{transform:scale(1.05);}
+.loading{margin-top:40px;color:#ff4444;text-shadow:0 0 10px #ff4444;}
 </style>
 </head>
 <body>
+
 <h1>🏆 Top 10 Scoreboard</h1>
+<p class="loading" id="loading">Loading scores...</p>
 <ol id="list"></ol>
-<button onclick="location.href='choice.html'">⬅ Back</button>
+<button onclick="location.href='index.html'">⬅ Back</button>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDiwnacK-zGX0htpVQpnbGfJuIu07qfkx4",
+  authDomain: "christmas-scoreboard.firebaseapp.com",
+  projectId: "christmas-scoreboard",
+  storageBucket: "christmas-scoreboard.firebasestorage.app",
+  messagingSenderId: "318116745288",
+  appId: "1:318116745288:web:4f2d74c7791664003ec87d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const list=document.getElementById("list");
+const loading=document.getElementById("loading");
 
-function render(){
-    const data=JSON.parse(localStorage.getItem("snowTop10"))||[];
+async function loadScores(){
     list.innerHTML="";
-    if(data.length===0){
+    const q=query(collection(db,"scores"), orderBy("score","desc"), limit(10));
+    const snap=await getDocs(q);
+    loading.style.display="none";
+
+    if(snap.empty){
         const li=document.createElement("li");
         li.textContent="No scores yet";
         list.appendChild(li);
-    } else {
-        data.forEach((p,i)=>{
-            const li=document.createElement("li");
-            li.textContent=`${i+1}. ${p.name} - ${p.score}`;
-            list.appendChild(li);
-        });
+        return;
     }
+
+    let rank=1;
+    snap.forEach(doc=>{
+        const d=doc.data();
+        const li=document.createElement("li");
+        li.textContent=`${rank}. ${d.name} — ${d.score}`;
+        list.appendChild(li);
+        rank++;
+    });
 }
 
-// Render initially
-render();
-
-// Listen to storage changes in real-time
-window.addEventListener("storage",()=>{
-    render();
-});
+loadScores();
 </script>
+
 </body>
 </html>
-

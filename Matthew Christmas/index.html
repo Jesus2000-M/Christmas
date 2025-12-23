@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Welcome</title>
 <style>
+*{ box-sizing:border-box; }
 body{
     margin:0;
     font-family:Arial, sans-serif;
@@ -19,19 +20,21 @@ body{
     padding:20px;
 }
 h1{
-    font-size:36px;
+    font-size:38px;
     color:#00ff66;
     text-shadow:0 0 10px #00ff66,0 0 25px #00ff66,0 0 40px #00ff66;
 }
 p{
+    font-size:18px;
     color:#ff4444;
     text-shadow:0 0 10px #ff4444;
 }
 input{
     margin:18px 0;
-    padding:12px;
-    width:240px;
-    border-radius:10px;
+    padding:14px;
+    width:260px;
+    max-width:90%;
+    border-radius:12px;
     border:2px solid #00ff66;
     background:#000;
     color:#fff;
@@ -41,10 +44,10 @@ input{
     outline:none;
 }
 button{
-    padding:12px 32px;
+    padding:14px 36px;
     border:none;
     border-radius:30px;
-    font-size:16px;
+    font-size:17px;
     cursor:pointer;
     font-weight:bold;
     background:linear-gradient(45deg,#ff0000,#00ff66);
@@ -59,18 +62,26 @@ button:hover{
 </style>
 </head>
 <body>
-<h1>Merry Christmas</h1>
+
+<h1>🎄 Merry Christmas 🎄</h1>
 <p>Enter your name to continue</p>
-<input id="name" placeholder="Your Name">
+
+<input id="name" placeholder="Your Name" maxlength="20">
 <button onclick="goNext()">ENTER</button>
+
 <script>
 function goNext(){
     const name = document.getElementById("name").value.trim();
     if(!name){ alert("Please enter your name"); return; }
     localStorage.setItem("playerName", name);
-    window.location.href = "choice.html";
+    window.location.href = "choice.html"; // next page
 }
+
+// Enter key support
+document.getElementById("name").addEventListener("keypress", e=>{
+    if(e.key==="Enter") goNext();
+});
 </script>
+
 </body>
 </html>
-
